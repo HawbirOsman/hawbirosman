@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Complain Panel</title>
+
+<style>
+:root {
+    --primary-color: #f59e0b;
+    --primary-dark: #d97706;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --border-color: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
+    min-height: 100vh;
+    color: var(--dark-color);
+}
+
+.main-container { max-width: 1400px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.header h1 { font-size: 28px; font-weight: 700; color: var(--dark-color); display: flex; align-items: center; gap: 12px; }
+.header h1 i { color: var(--primary-color); }
+
+.stats-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white; padding: 16px 24px; border-radius: 12px;
+    display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow);
+}
+.stats-number { font-size: 24px; font-weight: 700; }
+.stats-label { font-size: 14px; opacity: 0.9; }
+
+.filter-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #067091, #055a73);
+    color: white; padding: 8px 16px; border-radius: 20px;
+    font-size: 14px; font-weight: 600; margin-left: 12px;
+    animation: fadeIn 0.3s ease;
+}
+.filter-badge i { font-size: 12px; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+.content-section {
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
+table { width: 100%; border-collapse: collapse; background: white; }
+th {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 14px; position: relative;
+}
+th:first-child { border-top-left-radius: 12px; }
+th:last-child { border-top-right-radius: 12px; }
+td { padding: 16px 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; transition: background-color 0.2s ease; }
+tr:hover td { background-color: var(--light-color); }
+tr[data-cid]:hover { cursor: pointer; transform: translateY(-1px); transition: transform 0.2s ease; }
+
+.status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-align: center; display: inline-block; min-width: 80px; }
+.status-under { background: #fef3c7; color: #92400e; }
+.status-action { background: #dbeafe; color: #1e40af; }
+.status-resolved { background: #d1fae5; color: #065f46; }
+.status-not { background: #fecaca; color: #991b1b; }
+
+.filters-section {
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    height: fit-content; position: sticky; top: 20px;
+}
+.filters-section h2 { font-size: 20px; font-weight: 700; color: var(--dark-color); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.filter-group { margin-bottom: 20px; }
+.filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-color); font-size: 14px; }
+.filter-group select {
+    width: 100%; padding: 12px 16px; border: 2px solid var(--border-color);
+    border-radius: 8px; background: white; font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.filter-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+.filter-group select.active-filter { border-color: #067091; background: #ecfeff; }
+
+.btn {
+    padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none; text-align: center; justify-content: center;
+}
+.btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; box-shadow: var(--shadow); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-secondary { background: white; color: var(--secondary-color); border: 2px solid var(--border-color); }
+.btn-secondary:hover { background: var(--light-color); border-color: var(--secondary-color); }
+.btn-report { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; box-shadow: var(--shadow); }
+.btn-report:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.filter-actions { display: flex; gap: 12px; margin-top: 20px; }
+.filter-actions .btn { flex: 1; }
+
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px;
+}
+.modal-content {
+    background: white; border-radius: 16px; max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+    animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { padding: 24px 24px 0 24px; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 24px; font-weight: 700; color: var(--dark-color); display: flex; align-items: center; gap: 12px; }
+.close {
+    background: var(--light-color); color: var(--secondary-color); border: none;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s ease; font-size: 18px;
+}
+.close:hover { background: var(--danger-color); color: white; }
+.modal-body { padding: 24px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-color); font-size: 15px; }
+.form-group input[type="text"] {
+    width: 100%; padding: 14px 16px; border: 2px solid var(--border-color);
+    border-radius: 8px; font-size: 16px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-group input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+.form-group input[readonly] { background: var(--light-color); color: var(--secondary-color); }
+
+.status-update-group { display: flex; gap: 12px; align-items: end; }
+.status-update-group select { flex: 1; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; }
+
+.complain-area, .suggestion-area {
+    background: var(--light-color); border: 3px solid var(--border-color); border-radius: 8px;
+    padding: 20px; white-space: pre-wrap; line-height: 1.8; font-size: 16px;
+    min-height: 200px; max-height: 350px; overflow-y: auto;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-layout { grid-template-columns: 1fr; }
+    .filters-section { position: static; }
+}
+@media (max-width: 768px) {
+    .main-container { padding: 12px; }
+    .header-content { flex-direction: column; text-align: center; }
+    .content-section, .filters-section { padding: 16px; }
+    .filter-actions { flex-direction: column; }
+    .status-update-group { flex-direction: column; }
+    th, td { padding: 8px; font-size: 12px; }
+}
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--secondary-color); }
+.empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--border-color); }
+
+.btn-export { background: linear-gradient(135deg, var(--success-color), #059669); color: white; box-shadow: var(--shadow); margin-bottom: 20px; }
+.btn-export:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.modal-actions { display: flex; gap: 12px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--light-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--secondary-color); }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-tachometer-alt"></i>
+                Admin Dashboard - Complain Panel
+                <span class="filter-badge" id="filterBadge" style="display:none;">
+                    <i class="fas fa-filter"></i>
+                    Filtered: <span id="filterBadgeText"></span>
+                </span>
+            </h1>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button type="button" id="generateReportBtn" class="btn btn-report">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </button>
+                <div class="stats-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <div>
+                        <div class="stats-number" id="totalRecords">0</div>
+                        <div class="stats-label">Total Records</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <!-- Main Content -->
+        <div class="content-section">
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> #</th>
+                            <th><i class="fas fa-id-badge"></i> ID</th>
+                            <th><i class="fas fa-tag"></i> Category</th>
+                            <th><i class="fas fa-file-alt"></i> Title</th>
+                            <th><i class="fas fa-calendar"></i> Date</th>
+                            <th><i class="fas fa-flag"></i> Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Filters Sidebar -->
+        <div class="filters-section">
+            <h2><i class="fas fa-filter"></i> Filters</h2>
+            <form id="filterForm" onsubmit="event.preventDefault(); applyFilters();">
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar-alt"></i> Month</label>
+                    <select name="month" id="monthFilter">
+                        <option value="">All Months</option>
+                        <option>January</option><option>February</option><option>March</option>
+                        <option>April</option><option>May</option><option>June</option>
+                        <option>July</option><option>August</option><option>September</option>
+                        <option>October</option><option>November</option><option>December</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Year</label>
+                    <select name="year" id="yearFilter">
+                        <option value="">All Years</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-tag"></i> Category</label>
+                    <select name="category" id="categoryFilter">
+                        <option value="">All categories</option>
+                        <option>Workplace Environment</option>
+                        <option>Health & Safety</option>
+                        <option>Facilities</option>
+                        <option>Management & Supervision</option>
+                        <option>Colleagues & Behaviour</option>
+                        <option>IT & System</option>
+                        <option>HR & Policies</option>
+                        <option>Procurement & Finance</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-flag"></i> Status</label>
+                    <select name="status" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option>Under Review</option>
+                        <option>Action Taken</option>
+                        <option>Resolved</option>
+                        <option>Not Applicable</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Apply
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-info-circle"></i> Complain Details</h3>
+            <button class="close" type="button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-export" id="exportPdfBtn">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </button>
+            </div>
+            
+            <form id="statusUpdateForm" onsubmit="event.preventDefault(); handleStatusUpdate();">
+                <input type="hidden" id="m_cid_hidden">
+                
+                <div class="form-group">
+                    <label><i class="fas fa-id-badge"></i> Complain ID</label>
+                    <input type="text" id="m_cid" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Category</label>
+                    <input type="text" id="m_category" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-file-alt"></i> Title</label>
+                    <input type="text" id="m_title" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Date</label>
+                    <input type="text" id="m_date" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-flag"></i> Update Status</label>
+                    <div class="status-update-group">
+                        <select id="m_status_edit" required>
+                            <option value="">-- Select Status --</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Action Taken">Action Taken</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Not Applicable">Not Applicable</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Complain Details</label>
+                    <div class="complain-area" id="m_area"></div>
+                </div>
+
+                <div class="form-group" id="suggestion-group" style="display: none;">
+                    <label><i class="fas fa-lightbulb"></i> Suggestion</label>
+                    <div class="suggestion-area" id="m_suggestion"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// FAKE DATABASE (in-memory)
+// ============================================================
+let fakeDatabase = [
+    {
+        C_ID: 1,
+        Complain_Category: "IT & System",
+        Complain_Title: "Frequent VPN Disconnections",
+        Date: "2026-07-05",
+        Status: "Under Review",
+        Complain_Area: "The VPN connection drops every 15-20 minutes, forcing us to reconnect. This severely impacts productivity when working remotely.",
+        Suggestion: "Consider upgrading the VPN infrastructure or switching to a more reliable provider."
+    },
+    {
+        C_ID: 2,
+        Complain_Category: "Facilities",
+        Complain_Title: "Dirty Restrooms on 2nd Floor",
+        Date: "2026-07-02",
+        Status: "Action Taken",
+        Complain_Area: "The restrooms on the 2nd floor are not being cleaned regularly. This is unhygienic and unpleasant for all employees.",
+        Suggestion: "Increase the cleaning schedule to twice daily during working hours."
+    },
+    {
+        C_ID: 3,
+        Complain_Category: "Management & Supervision",
+        Complain_Title: "Lack of Communication from Team Lead",
+        Date: "2026-06-25",
+        Status: "Resolved",
+        Complain_Area: "Team lead rarely communicates project priorities or deadlines, causing confusion and missed targets.",
+        Suggestion: ""
+    },
+    {
+        C_ID: 4,
+        Complain_Category: "HR & Policies",
+        Complain_Title: "Unclear Overtime Policy",
+        Date: "2026-06-18",
+        Status: "Under Review",
+        Complain_Area: "The overtime compensation policy is not clearly documented, leading to disputes about payment.",
+        Suggestion: "Publish a clear and detailed overtime policy on the HR portal."
+    },
+    {
+        C_ID: 5,
+        Complain_Category: "Health & Safety",
+        Complain_Title: "Broken Emergency Exit Sign",
+        Date: "2026-06-10",
+        Status: "Resolved",
+        Complain_Area: "The emergency exit sign near the west staircase is broken and not illuminated. This is a serious safety concern.",
+        Suggestion: "Replace immediately and conduct a full safety audit."
+    },
+    {
+        C_ID: 6,
+        Complain_Category: "Colleagues & Behaviour",
+        Complain_Title: "Loud Conversations in Open Office",
+        Date: "2026-05-28",
+        Status: "Not Applicable",
+        Complain_Area: "Some colleagues have loud phone conversations that disturb others trying to concentrate.",
+        Suggestion: "Designate specific areas or booths for phone calls."
+    },
+    {
+        C_ID: 7,
+        Complain_Category: "Procurement & Finance",
+        Complain_Title: "Delayed Vendor Payments",
+        Date: "2026-05-15",
+        Status: "Action Taken",
+        Complain_Area: "Several vendors have complained about payment delays that are affecting our business relationships.",
+        Suggestion: ""
+    },
+    {
+        C_ID: 8,
+        Complain_Category: "Workplace Environment",
+        Complain_Title: "Uncomfortable Office Chairs",
+        Date: "2026-04-30",
+        Status: "Under Review",
+        Complain_Area: "The office chairs are old and uncomfortable, causing back pain for many employees who sit for long hours.",
+        Suggestion: "Invest in ergonomic office chairs for all workstations."
+    }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let activeFilters = { month: '', year: '', category: '', status: '' };
+
+// ============================================================
+// ELEMENTS
+// ============================================================
+const modal = document.getElementById("infoModal");
+const closeBtn = document.querySelector(".close");
+const exportBtn = document.getElementById("exportPdfBtn");
+
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function renderTable() {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    
+    const filtered = getFilteredData();
+    document.getElementById("totalRecords").textContent = filtered.length;
+    
+    // Filter badge
+    const badge = document.getElementById("filterBadge");
+    if (activeFilters.status) {
+        badge.style.display = "inline-flex";
+        document.getElementById("filterBadgeText").textContent = activeFilters.status;
+    } else {
+        badge.style.display = "none";
+    }
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan='6' class='empty-state'>
+            <i class='fas fa-search'></i><br>
+            <strong>No records found</strong><br>
+            <small>Try adjusting your filters</small>
+        </td></tr>`;
+        return;
+    }
+    
+    const statusClassMap = {
+        'Under Review': 'status-under',
+        'Action Taken': 'status-action',
+        'Resolved': 'status-resolved',
+        'Not Applicable': 'status-not'
+    };
+    
+    filtered.forEach((row, idx) => {
+        const statusClass = statusClassMap[row.Status] || 'status-under';
+        
+        const tr = document.createElement("tr");
+        tr.dataset.cid = row.C_ID;
+        tr.dataset.category = row.Complain_Category;
+        tr.dataset.title = row.Complain_Title;
+        tr.dataset.date = row.Date;
+        tr.dataset.status = row.Status;
+        tr.dataset.area = row.Complain_Area;
+        tr.dataset.suggestion = row.Suggestion || '';
+        tr.title = "Double-click to view details and update status";
+        
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><strong>#${row.C_ID}</strong></td>
+            <td>${escapeHtml(row.Complain_Category)}</td>
+            <td>${escapeHtml(row.Complain_Title)}</td>
+            <td>${row.Date}</td>
+            <td><span class='status-badge ${statusClass}'>${row.Status}</span></td>
+        `;
+        
+        tr.addEventListener("dblclick", () => openDetailsModal(tr));
+        tbody.appendChild(tr);
+    });
+}
+
+// ============================================================
+// FILTERING
+// ============================================================
+function getFilteredData() {
+    return fakeDatabase.filter(row => {
+        if (activeFilters.month) {
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const rowMonth = months[new Date(row.Date).getMonth()];
+            if (rowMonth !== activeFilters.month) return false;
+        }
+        if (activeFilters.year) {
+            const rowYear = new Date(row.Date).getFullYear().toString();
+            if (rowYear !== activeFilters.year) return false;
+        }
+        if (activeFilters.category && row.Complain_Category !== activeFilters.category) return false;
+        if (activeFilters.status && row.Status !== activeFilters.status) return false;
+        return true;
+    });
+}
+
+function applyFilters() {
+    activeFilters.month = document.getElementById("monthFilter").value;
+    activeFilters.year = document.getElementById("yearFilter").value;
+    activeFilters.category = document.getElementById("categoryFilter").value;
+    activeFilters.status = document.getElementById("statusFilter").value;
+    
+    document.getElementById("monthFilter").classList.toggle("active-filter", !!activeFilters.month);
+    document.getElementById("yearFilter").classList.toggle("active-filter", !!activeFilters.year);
+    document.getElementById("categoryFilter").classList.toggle("active-filter", !!activeFilters.category);
+    document.getElementById("statusFilter").classList.toggle("active-filter", !!activeFilters.status);
+    
+    renderTable();
+}
+
+function resetFilters() {
+    activeFilters = { month: '', year: '', category: '', status: '' };
+    document.getElementById("filterForm").reset();
+    document.querySelectorAll(".filter-group select").forEach(s => s.classList.remove("active-filter"));
+    renderTable();
+}
+
+// ============================================================
+// MODAL OPEN
+// ============================================================
+function openDetailsModal(tr) {
+    document.getElementById("m_cid").value = tr.dataset.cid;
+    document.getElementById("m_cid_hidden").value = tr.dataset.cid;
+    document.getElementById("m_category").value = tr.dataset.category;
+    document.getElementById("m_title").value = tr.dataset.title;
+    document.getElementById("m_date").value = tr.dataset.date;
+    document.getElementById("m_status_edit").value = tr.dataset.status;
+    document.getElementById("m_area").textContent = tr.dataset.area;
+
+    // Show/hide suggestion based on content
+    const suggestionGroup = document.getElementById("suggestion-group");
+    const suggestionValue = tr.dataset.suggestion;
+    
+    if (suggestionValue && suggestionValue.trim() !== '' && suggestionValue !== 'null') {
+        document.getElementById("m_suggestion").textContent = suggestionValue;
+        suggestionGroup.style.display = "block";
+    } else {
+        suggestionGroup.style.display = "none";
+    }
+
+    modal.style.display = "flex";
+    attachExportHandler();
+}
+
+// ============================================================
+// STATUS UPDATE (Fake)
+// ============================================================
+function handleStatusUpdate() {
+    const cid = parseInt(document.getElementById("m_cid_hidden").value);
+    const newStatus = document.getElementById("m_status_edit").value;
+    
+    if (!newStatus) {
+        alert("Please select a status.");
+        return;
+    }
+    
+    const record = fakeDatabase.find(r => r.C_ID === cid);
+    if (record) {
+        record.Status = newStatus;
+    }
+    
+    alert(`(Fake) Status for complain #${cid} updated to "${newStatus}" successfully!`);
+    modal.style.display = "none";
+    renderTable();
+}
+
+// ============================================================
+// CLOSE HANDLERS
+// ============================================================
+closeBtn.onclick = () => modal.style.display = "none";
+window.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && modal.style.display === "flex") {
+        modal.style.display = "none";
+    }
+});
+
+// ============================================================
+// EXPORT PDF (Individual)
+// ============================================================
+function attachExportHandler() {
+    if (!exportBtn) return;
+    exportBtn.onclick = () => {
+        const btn = exportBtn;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+        btn.disabled = true;
+
+        const complainData = {
+            id: document.getElementById("m_cid").value,
+            category: document.getElementById("m_category").value,
+            title: document.getElementById("m_title").value,
+            date: document.getElementById("m_date").value,
+            status: document.getElementById("m_status_edit").value,
+            details: document.getElementById("m_area").textContent,
+            suggestion: document.getElementById("m_suggestion").textContent
+        };
+
+        generateComplainPDF(complainData);
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 2000);
+    };
+}
+
+function generateComplainPDF(data) {
+    const printWindow = window.open("", "_blank");
+    
+    const suggestionSection = (data.suggestion && data.suggestion.trim() !== '' && data.suggestion !== 'null') 
+        ? `<div class="details-section">
+            <h3>Suggestion</h3>
+            <div class="details-content">${data.suggestion}</div>
+           </div>` 
+        : '';
+    
+    const pdfContent = `
+    <!DOCTYPE html><html><head><title>Complain Details - #${data.id}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin:40px; line-height:1.6; color:#333; }
+        .header { text-align:center; border-bottom:2px solid #f59e0b; padding-bottom:20px; margin-bottom:30px; }
+        .header h1 { color:#f59e0b; margin:0; font-size:28px; }
+        .header p  { color:#666; margin:5px 0; }
+        .detail-row { display:flex; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; }
+        .detail-label { font-weight:bold; width:150px; color:#f59e0b; }
+        .detail-value { flex:1; padding-left:20px; }
+        .details-section { margin-top:30px; padding:20px; background:#fef3c7; border-radius:8px; border-left:4px solid #f59e0b; }
+        .details-section h3 { color:#f59e0b; margin-top:0; }
+        .details-content { white-space:pre-wrap; line-height:1.8; font-size:14px; }
+        .footer { margin-top:40px; text-align:center; font-size:12px; color:#666; border-top:1px solid #eee; padding-top:20px; }
+        @media print { body{margin:20px;} .header{break-after:avoid;} }
+    </style></head><body>
+        <div class="header">
+            <h1>Complain Details Report</h1>
+            <p>Generated on ${new Date().toLocaleString()}</p>
+        </div>
+        <div class="detail-row"><div class="detail-label">Complain ID:</div><div class="detail-value">#${data.id}</div></div>
+        <div class="detail-row"><div class="detail-label">Category:</div><div class="detail-value">${data.category}</div></div>
+        <div class="detail-row"><div class="detail-label">Title:</div><div class="detail-value">${data.title}</div></div>
+        <div class="detail-row"><div class="detail-label">Date:</div><div class="detail-value">${data.date}</div></div>
+        <div class="detail-row"><div class="detail-label">Current Status:</div><div class="detail-value">${data.status}</div></div>
+        <div class="details-section">
+            <h3>Complain Details</h3>
+            <div class="details-content">${data.details}</div>
+        </div>
+        ${suggestionSection}
+        <div class="footer">
+            <p>This report was generated from the Admin Dashboard</p>
+            <p>© ${new Date().getFullYear()} Suggestion & Complaint Management System</p>
+        </div>
+        <script>window.onload=function(){window.print();window.onafterprint=()=>window.close();};<\/script>
+    </body></html>`;
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+}
+
+// ============================================================
+// GENERATE TABLE REPORT (PDF)
+// ============================================================
+function getStatusClass(status) {
+    const map = {
+        'Under Review': 'status-under',
+        'Action Taken': 'status-action',
+        'Resolved': 'status-resolved',
+        'Not Applicable': 'status-not'
+    };
+    return map[status] || 'status-under';
+}
+
+document.getElementById("generateReportBtn").addEventListener("click", function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+
+    const tableData = getFilteredData().map(r => ({
+        id: r.C_ID,
+        category: r.Complain_Category,
+        title: r.Complain_Title,
+        date: r.Date,
+        status: r.Status
+    }));
+
+    generateTableReport(tableData, activeFilters);
+
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 2000);
+});
+
+function generateTableReport(data, filters) {
+    const printWindow = window.open("", "_blank");
+    
+    let filterSummary = '';
+    if (filters.month || filters.year || filters.category || filters.status) {
+        filterSummary = '<div class="filter-info"><h3>Applied Filters:</h3><ul>';
+        if (filters.month) filterSummary += `<li><strong>Month:</strong> ${filters.month}</li>`;
+        if (filters.year) filterSummary += `<li><strong>Year:</strong> ${filters.year}</li>`;
+        if (filters.category) filterSummary += `<li><strong>Category:</strong> ${filters.category}</li>`;
+        if (filters.status) filterSummary += `<li><strong>Status:</strong> ${filters.status}</li>`;
+        filterSummary += '</ul></div>';
+    }
+    
+    let tableRows = '';
+    data.forEach((item, index) => {
+        const statusClass = getStatusClass(item.status);
+        tableRows += `<tr>
+            <td>${index + 1}</td>
+            <td><strong>#${item.id}</strong></td>
+            <td>${item.category}</td>
+            <td>${item.title}</td>
+            <td>${item.date}</td>
+            <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+        </tr>`;
+    });
+
+    const pdfContent = `
+    <!DOCTYPE html><html><head><title>Complains Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+        .header { text-align: center; border-bottom: 3px solid #f59e0b; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #f59e0b; margin: 0; font-size: 32px; }
+        .stats { background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #f59e0b; }
+        .stats strong { color: #f59e0b; font-size: 18px; }
+        .filter-info { background: #ecfeff; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #067091; }
+        .filter-info h3 { color: #055a73; margin: 0 0 10px 0; font-size: 16px; }
+        .filter-info ul { margin: 0; padding-left: 20px; }
+        .filter-info li { margin: 5px 0; color: #0e7490; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        thead { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        th { padding: 14px 10px; text-align: left; font-weight: 600; font-size: 13px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        tbody tr:nth-child(even) { background-color: #f8fafc; }
+        .status-badge { padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: 600; display: inline-block; min-width: 100px; text-align: center; }
+        .status-under { background: #fef3c7; color: #92400e; }
+        .status-action { background: #dbeafe; color: #1e40af; }
+        .status-resolved { background: #d1fae5; color: #065f46; }
+        .status-not { background: #fecaca; color: #991b1b; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+    </style></head><body>
+        <div class="header">
+            <h1>📋 Complains Report</h1>
+            <p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p>
+            <p><strong>Report Type:</strong> Table Data Export</p>
+        </div>
+        <div class="stats"><strong>Total Records in Report: ${data.length}</strong></div>
+        ${filterSummary}
+        <table>
+            <thead><tr><th>#</th><th>ID</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+        <div class="footer">
+            <p><strong>Suggestion & Complaint Management System</strong></p>
+            <p>© ${new Date().getFullYear()} Admin Dashboard - Confidential Report</p>
+            <p>This report contains ${data.length} complain record(s)</p>
+        </div>
+        <script>window.onload=function(){window.print();window.onafterprint=()=>window.close();};<\/script>
+    </body></html>`;
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// ============================================================
+// INITIAL RENDER
+// ============================================================
+renderTable();
+</script>
+
+</body>
+</html>

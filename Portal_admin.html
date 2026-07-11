@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Hiwa Rauf</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root {
+    --primary:      #067091;
+    --primary-dark: #055a73;
+    --secondary:    #64748b;
+    --success:      #10b981;
+    --warning:      #f59e0b;
+    --danger:       #ef4444;
+    --dark:         #1e293b;
+    --light:        #f8fafc;
+    --border:       #e2e8f0;
+    --shadow:    0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.10), 0 4px 6px -2px rgba(0,0,0,.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #eaf3f6 0%, #ffffff 100%);
+    min-height: 100vh;
+    color: var(--dark);
+    padding: 20px;
+  }
+
+  /* ---- WRAPPER ---- */
+  .main-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    transition: opacity .4s ease, filter .4s ease;
+  }
+
+  /* ---- HOME CARD ---- */
+  .home-container {
+    background: rgba(255,255,255,.96);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 56px 72px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    margin-bottom: 28px;
+    position: relative;
+    animation: fadeUp .5s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-container { margin-bottom: 36px; }
+
+  .logo-placeholder {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 12px 22px;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+  }
+
+  .welcome-text { margin-bottom: 44px; }
+  .welcome-text h1 { font-size: 30px; font-weight: 700; margin-bottom: 10px; }
+  .welcome-text p  { font-size: 15px; color: var(--secondary); line-height: 1.6; }
+
+  .panel-buttons { display: flex; flex-direction: column; gap: 18px; }
+
+  .panel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 36px;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+
+  .panel-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.18);
+    transform: translateX(-110%);
+    transition: transform .35s ease;
+  }
+  .panel-btn:hover::before { transform: translateX(110%); }
+  .panel-btn:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .panel-btn i { font-size: 22px; }
+
+  .suggestion-btn { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+  .complain-btn   { background: linear-gradient(135deg, var(--warning), #d97706); }
+
+  .footer-text { margin-top: 36px; font-size: 13px; color: var(--secondary); }
+
+  /* ---- STATS ---- */
+  .stats-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    animation: fadeUp .6s ease .15s both;
+  }
+
+  .stats-table-wrapper {
+    background: rgba(255,255,255,.96);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .stats-table-wrapper h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stats-table-wrapper.suggestion h3 { color: var(--primary); }
+  .stats-table-wrapper.complain  h3  { color: var(--warning); }
+
+  .stats-table { width: 100%; border-collapse: collapse; }
+
+  .stats-table tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  .stats-table tr:last-child { border-bottom: none; }
+  .stats-table tr:hover { background: var(--light); }
+
+  .stats-table td {
+    padding: 15px 12px;
+    font-size: 15px;
+  }
+  .stats-table td:first-child { font-weight: 600; }
+  .stats-table td:last-child  { text-align: right; }
+
+  .status-badge-small { display: inline-flex; align-items: center; gap: 7px; }
+  .status-badge-small i { font-size: 12px; }
+
+  .count-badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    display: inline-block;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .stats-table-wrapper.suggestion .count-badge { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+  .stats-table-wrapper.complain  .count-badge  { background: linear-gradient(135deg, var(--warning), #d97706); }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 960px)  { .stats-container { grid-template-columns: 1fr; } }
+  @media (max-width: 768px)  { .home-container { padding: 36px 28px; } .welcome-text h1 { font-size: 24px; } }
+  @media (max-width: 480px)  { .home-container { padding: 28px 18px; } .panel-btn { padding: 16px 24px; font-size: 15px; } }
+</style>
+</head>
+<body>
+
+<div class="main-wrapper" id="mainWrapper">
+
+  <div class="home-container">
+    <div class="logo-container">
+      <div class="logo-placeholder">
+        <i class="fas fa-building"></i>
+        Hiwa Rauf for Investment &amp; Development
+      </div>
+    </div>
+
+    <div class="welcome-text">
+      <h1>Welcome to Admin Dashboard</h1>
+      <p>Manage suggestions and complaints efficiently. Select a panel below to get started.</p>
+    </div>
+
+    <div class="panel-buttons">
+      <button class="panel-btn suggestion-btn" onclick="window.location.href='suggestionAdmin.html'">
+        <i class="fas fa-lightbulb"></i>
+        <span>Suggestion Panel</span>
+      </button>
+      <button class="panel-btn complain-btn" onclick="window.location.href='complainAdmin.html'">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Complain Panel</span>
+      </button>
+    </div>
+
+    <div class="footer-text">
+      <p>&#169; 2025 Suggestion &amp; Complaint Management System</p>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="stats-container">
+
+    <div class="stats-table-wrapper suggestion">
+      <h3><i class="fas fa-lightbulb"></i> Suggestion Statistics</h3>
+      <table class="stats-table">
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-clock"></i> Under Review</span></td>
+          <td><span class="count-badge">12</span></td>
+        </tr>
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-check-circle"></i> Action Taken</span></td>
+          <td><span class="count-badge">8</span></td>
+        </tr>
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-check-double"></i> Resolved</span></td>
+          <td><span class="count-badge">24</span></td>
+        </tr>
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-times-circle"></i> Not Applicable</span></td>
+          <td><span class="count-badge">3</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="stats-table-wrapper complain">
+      <h3><i class="fas fa-exclamation-circle"></i> Complain Statistics</h3>
+      <table class="stats-table">
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-clock"></i> Under Review</span></td>
+          <td><span class="count-badge">5</span></td>
+        </tr>
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-check-circle"></i> Action Taken</span></td>
+          <td><span class="count-badge">11</span></td>
+        </tr>
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-check-double"></i> Resolved</span></td>
+          <td><span class="count-badge">19</span></td>
+        </tr>
+        <tr>
+          <td><span class="status-badge-small"><i class="fas fa-times-circle"></i> Not Applicable</span></td>
+          <td><span class="count-badge">2</span></td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

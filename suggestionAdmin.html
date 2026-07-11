@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Suggestions & Complaints</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary-color: #067091;
+    --primary-dark: #055a73;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --border-color: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #eaf3f6 0%,  #ffffff 100%);
+    min-height: 100vh;
+    color: var(--dark-color);
+}
+
+.main-container { max-width: 1400px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+
+/* Header */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.header h1 { font-size: 28px; font-weight: 700; color: var(--dark-color); display: flex; align-items: center; gap: 12px; }
+.header h1 i { color: var(--primary-color); }
+
+.stats-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white; padding: 16px 24px; border-radius: 12px;
+    display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow);
+}
+.stats-number { font-size: 24px; font-weight: 700; }
+.stats-label { font-size: 14px; opacity: 0.9; }
+
+.filter-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    color: white; padding: 8px 16px; border-radius: 20px;
+    font-size: 14px; font-weight: 600; margin-left: 12px;
+    animation: fadeIn 0.3s ease;
+}
+.filter-badge i { font-size: 12px; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+.content-section {
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
+table { width: 100%; border-collapse: collapse; background: white; }
+th {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white; padding: 16px 12px; text-align: left; font-weight: 600; font-size: 14px; position: relative;
+}
+th:first-child { border-top-left-radius: 12px; }
+th:last-child { border-top-right-radius: 12px; }
+td { padding: 16px 12px; border-bottom: 1px solid var(--border-color); font-size: 14px; transition: background-color 0.2s ease; }
+tr:hover td { background-color: var(--light-color); }
+tr[data-sid]:hover { cursor: pointer; transform: translateY(-1px); transition: transform 0.2s ease; }
+
+.status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-align: center; display: inline-block; min-width: 80px; }
+.status-under { background: #fef3c7; color: #92400e; }
+.status-action { background: #dbeafe; color: #1e40af; }
+.status-resolved { background: #d1fae5; color: #065f46; }
+.status-not { background: #fecaca; color: #991b1b; }
+
+.file-indicator { display: inline-flex; align-items: center; gap: 4px; color: var(--success-color); font-size: 12px; margin-left: 8px; }
+
+.filters-section {
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    height: fit-content; position: sticky; top: 20px;
+}
+.filters-section h2 { font-size: 20px; font-weight: 700; color: var(--dark-color); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.filter-group { margin-bottom: 20px; }
+.filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-color); font-size: 14px; }
+.filter-group select {
+    width: 100%; padding: 12px 16px; border: 2px solid var(--border-color);
+    border-radius: 8px; background: white; font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.filter-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+.filter-group select.active-filter { border-color: var(--warning-color); background: #fffbeb; }
+
+.btn {
+    padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none; text-align: center; justify-content: center;
+}
+.btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; box-shadow: var(--shadow); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-secondary { background: white; color: var(--secondary-color); border: 2px solid var(--border-color); }
+.btn-secondary:hover { background: var(--light-color); border-color: var(--secondary-color); }
+.btn-report { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; box-shadow: var(--shadow); }
+.btn-report:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-excel { background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: var(--shadow); }
+.btn-excel:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-home {
+    background: white; color: var(--primary-color); border: 2px solid var(--primary-color);
+    padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.btn-home:hover { background: var(--primary-color); color: white; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-download { background: linear-gradient(135deg, var(--success-color), #059669); color: white; box-shadow: var(--shadow); padding: 8px 16px; font-size: 13px; }
+.btn-download:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.filter-actions { display: flex; gap: 12px; margin-top: 20px; }
+.filter-actions .btn { flex: 1; }
+
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px); justify-content: center; align-items: center; padding: 20px;
+}
+.modal-content {
+    background: white; border-radius: 16px; max-width: 800px; width: 100%;
+    max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+    animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { padding: 24px 24px 0 24px; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 24px; font-weight: 700; color: var(--dark-color); display: flex; align-items: center; gap: 12px; }
+.close {
+    background: var(--light-color); color: var(--secondary-color); border: none;
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s ease; font-size: 18px;
+}
+.close:hover { background: var(--danger-color); color: white; }
+.modal-body { padding: 24px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-color); font-size: 15px; }
+.form-group input[type="text"] {
+    width: 100%; padding: 14px 16px; border: 2px solid var(--border-color);
+    border-radius: 8px; font-size: 16px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-group input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+.form-group input[readonly] { background: var(--light-color); color: var(--secondary-color); }
+
+.file-upload-wrapper { position: relative; margin-top: 8px; }
+.file-upload-input {
+    width: 100%; padding: 14px 16px; border: 2px dashed var(--border-color);
+    border-radius: 8px; background: var(--light-color); font-size: 14px;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.file-upload-input:hover { border-color: var(--primary-color); background: #f0f9ff; }
+
+.file-info { margin-top: 8px; padding: 12px; background: #d1fae5; border-radius: 8px; font-size: 13px; color: #065f46; display: none; }
+.file-info.active { display: block; }
+.file-requirement { margin-top: 8px; padding: 12px; background: #fffbeb; border-left: 4px solid var(--warning-color); border-radius: 4px; font-size: 13px; color: #92400e; display: none; }
+.file-requirement.active { display: block; }
+
+.status-update-group { display: flex; gap: 12px; align-items: end; }
+.status-update-group select { flex: 1; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; }
+
+.suggestion-area {
+    background: var(--light-color); border: 2px solid var(--border-color); border-radius: 8px;
+    padding: 20px; white-space: pre-wrap; line-height: 1.8; font-size: 16px;
+    min-height: 200px; max-height: 350px; overflow-y: auto;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-layout { grid-template-columns: 1fr; }
+    .filters-section { position: static; }
+}
+@media (max-width: 768px) {
+    .main-container { padding: 12px; }
+    .header-content { flex-direction: column; text-align: center; }
+    .content-section, .filters-section { padding: 16px; }
+    .filter-actions { flex-direction: column; }
+    .status-update-group { flex-direction: column; }
+    th, td { padding: 8px; font-size: 12px; }
+}
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--secondary-color); }
+.empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--border-color); }
+
+.btn-export { background: linear-gradient(135deg, var(--success-color), #059669); color: white; box-shadow: var(--shadow); margin-bottom: 20px; }
+.btn-export:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.modal-actions { display: flex; gap: 12px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--light-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--secondary-color); }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- Header -->
+   <!-- Header -->
+<div class="header">
+    <div class="header-content">
+        <h1>
+            <i class="fas fa-tachometer-alt"></i>
+            Admin Dashboard - Suggestion Panel
+            <span class="filter-badge" id="filterBadge" style="display:none;">
+                <i class="fas fa-filter"></i>
+                Filtered: <span id="filterBadgeText"></span>
+            </span>
+        </h1>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="button" id="generateReportBtn" class="btn btn-report">
+                <i class="fas fa-file-pdf"></i> Generate Report
+            </button>
+            <button type="button" id="exportExcelBtn" class="btn btn-excel">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </button>
+            <div class="stats-card">
+                <i class="fas fa-chart-bar"></i>
+                <div>
+                    <div class="stats-number" id="totalRecords">0</div>
+                    <div class="stats-label">Total Records</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="dashboard-layout">
+        <!-- Main Content -->
+        <div class="content-section">
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> #</th>
+                            <th><i class="fas fa-id-badge"></i> ID</th>
+                            <th><i class="fas fa-tag"></i> Category</th>
+                            <th><i class="fas fa-file-alt"></i> Title</th>
+                            <th><i class="fas fa-calendar"></i> Date</th>
+                            <th><i class="fas fa-flag"></i> Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Filters Sidebar -->
+        <div class="filters-section">
+            <h2><i class="fas fa-filter"></i> Filters</h2>
+            <form id="filterForm" onsubmit="event.preventDefault(); applyFilters();">
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar-alt"></i> Month</label>
+                    <select name="month" id="monthFilter">
+                        <option value="">All Months</option>
+                        <option>January</option><option>February</option><option>March</option>
+                        <option>April</option><option>May</option><option>June</option>
+                        <option>July</option><option>August</option><option>September</option>
+                        <option>October</option><option>November</option><option>December</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-calendar"></i> Year</label>
+                    <select name="year" id="yearFilter">
+                        <option value="">All Years</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-tag"></i> Category</label>
+                    <select name="category" id="categoryFilter">
+                        <option value="">All categories</option>
+                        <option>Workplace Environment</option>
+                        <option>Health & Safety</option>
+                        <option>Facilities</option>
+                        <option>Management & Supervision</option>
+                        <option>Colleagues & Behaviour</option>
+                        <option>IT & System</option>
+                        <option>HR & Policies</option>
+                        <option>Procurement & Finance</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fas fa-flag"></i> Status</label>
+                    <select name="status" id="statusFilter">
+                        <option value="">All Statuses</option>
+                        <option>Under Review</option>
+                        <option>Action Taken</option>
+                        <option>Resolved</option>
+                        <option>Not Applicable</option>
+                    </select>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Apply
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-info-circle"></i> Suggestion Details</h3>
+            <button class="close" type="button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-export" id="exportPdfBtn">
+                    <i class="fas fa-file-pdf"></i> Export to PDF
+                </button>
+                <button type="button" class="btn btn-download" id="downloadFileBtn" style="display:none;">
+                    <i class="fas fa-download"></i> Download Resolution File
+                </button>
+                <button type="button" class="btn btn-secondary" id="updateFileBtn" style="display:none;">
+                    <i class="fas fa-upload"></i> Update Resolution File
+                </button>
+            </div>
+            
+            <form id="statusUpdateForm" onsubmit="event.preventDefault(); handleStatusUpdate();">
+                <input type="hidden" id="m_sid_hidden">
+                
+                <div class="form-group">
+                    <label><i class="fas fa-id-badge"></i> Suggestion ID</label>
+                    <input type="text" id="m_sid" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Category</label>
+                    <input type="text" id="m_category" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-file-alt"></i> Title</label>
+                    <input type="text" id="m_title" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Date</label>
+                    <input type="text" id="m_date" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-flag"></i> Update Status</label>
+                    <div class="status-update-group">
+                        <select id="m_status_edit" required>
+                            <option value="">-- Select Status --</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Action Taken">Action Taken</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Not Applicable">Not Applicable</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update
+                        </button>
+                    </div>
+                    
+                    <div id="fileUploadSection" style="display:none;">
+                        <div class="file-requirement active">
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Required:</strong> Please upload a resolution file (PDF, Word, or Excel) to change status to Resolved.
+                        </div>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="resolution_file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="file-upload-input">
+                        </div>
+                        <div id="fileInfo" class="file-info">
+                            <i class="fas fa-check-circle"></i> File selected: <span id="fileName"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="existingFileNotice" style="display:none;">
+                        <div class="file-info active" style="background: #e0f2fe; color: #0c4a6e;">
+                            <i class="fas fa-info-circle"></i> This suggestion already has a resolution file attached. You can keep it or upload a new one to replace it.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-align-left"></i> Suggestion Details</label>
+                    <div class="suggestion-area" id="m_area"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update File Modal -->
+<div id="updateFileModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-upload"></i> Update Resolution File</h3>
+            <button class="close" type="button" id="closeUpdateFileModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="updateFileForm" onsubmit="event.preventDefault(); handleFileUpdate();">
+                <input type="hidden" id="update_file_sid">
+                
+                <div class="form-group">
+                    <label><i class="fas fa-id-badge"></i> Suggestion ID</label>
+                    <input type="text" id="update_file_sid_display" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-exclamation-circle"></i> Current Status</label>
+                    <div style="padding: 12px; background: #d1fae5; border-radius: 8px; color: #065f46; font-weight: 600;">
+                        <i class="fas fa-check-circle"></i> This suggestion has an existing resolution file
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-file-upload"></i> Upload New File (Replace existing)</label>
+                    <div class="file-requirement active" style="margin-bottom: 12px;">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Uploading a new file will replace the existing resolution file.
+                    </div>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="update_resolution_file" accept=".pdf,.doc,.docx,.xls,.xlsx" class="file-upload-input" required>
+                    </div>
+                    <div id="updateFileInfo" class="file-info">
+                        <i class="fas fa-check-circle"></i> File selected: <span id="updateFileName"></span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Update File
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancelUpdateFile" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// FAKE DATABASE (in-memory)
+// ============================================================
+let fakeDatabase = [
+    {
+        S_ID: 1,
+        Suggestion_Category: "IT & System",
+        Suggestion_Title: "Slow Wi-Fi on 3rd Floor",
+        Date: "2026-07-01",
+        Status: "Under Review",
+        Suggestion_Area: "The Wi-Fi connection on the 3rd floor is extremely slow during peak working hours (10:00 AM - 2:00 PM). This affects productivity, especially for staff who rely on cloud-based tools.",
+        hasFile: false
+    },
+    {
+        S_ID: 2,
+        Suggestion_Category: "HR & Policies",
+        Suggestion_Title: "Delay in Leave Approval",
+        Date: "2026-07-03",
+        Status: "Action Taken",
+        Suggestion_Area: "Leave requests are taking more than a week to be approved. Suggest automating the workflow through the HR portal to reduce turnaround time.",
+        hasFile: false
+    },
+    {
+        S_ID: 3,
+        Suggestion_Category: "Facilities",
+        Suggestion_Title: "Broken Air Conditioner in Meeting Room B",
+        Date: "2026-06-28",
+        Status: "Resolved",
+        Suggestion_Area: "The AC unit in Meeting Room B has not been working since last week. Please arrange maintenance as soon as possible.",
+        hasFile: true
+    },
+    {
+        S_ID: 4,
+        Suggestion_Category: "Health & Safety",
+        Suggestion_Title: "Missing First Aid Kit",
+        Date: "2026-06-15",
+        Status: "Resolved",
+        Suggestion_Area: "The first aid kit in the main lobby is missing several essential items. It needs to be restocked immediately.",
+        hasFile: true
+    },
+    {
+        S_ID: 5,
+        Suggestion_Category: "Workplace Environment",
+        Suggestion_Title: "Better Lighting in Open Office",
+        Date: "2026-05-20",
+        Status: "Not Applicable",
+        Suggestion_Area: "The lighting in the open office area is too dim. Suggest replacing bulbs with brighter LED alternatives.",
+        hasFile: false
+    },
+    {
+        S_ID: 6,
+        Suggestion_Category: "Management & Supervision",
+        Suggestion_Title: "Monthly Team Feedback Sessions",
+        Date: "2026-05-10",
+        Status: "Under Review",
+        Suggestion_Area: "Propose introducing monthly feedback sessions between team leads and members to improve communication and morale.",
+        hasFile: false
+    },
+    {
+        S_ID: 7,
+        Suggestion_Category: "Procurement & Finance",
+        Suggestion_Title: "Faster Reimbursement Process",
+        Date: "2026-04-22",
+        Status: "Action Taken",
+        Suggestion_Area: "Employee expense reimbursement takes over 3 weeks. Suggest streamlining the approval flow through Finance.",
+        hasFile: false
+    },
+    {
+        S_ID: 8,
+        Suggestion_Category: "IT & System",
+        Suggestion_Title: "Enable MFA for All Users",
+        Date: "2026-04-05",
+        Status: "Resolved",
+        Suggestion_Area: "For security, enable Multi-Factor Authentication (MFA) across all Microsoft 365 accounts.",
+        hasFile: true
+    }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentSuggestionId = null;
+let currentHasFile = false;
+let activeFilters = { month: '', year: '', category: '', status: '' };
+
+// ============================================================
+// ELEMENTS
+// ============================================================
+const modal = document.getElementById("infoModal");
+const closeBtn = document.querySelector(".close");
+const exportBtn = document.getElementById("exportPdfBtn");
+const downloadFileBtn = document.getElementById("downloadFileBtn");
+const updateFileBtn = document.getElementById("updateFileBtn");
+const statusSelect = document.getElementById("m_status_edit");
+const fileUploadSection = document.getElementById("fileUploadSection");
+const existingFileNotice = document.getElementById("existingFileNotice");
+const fileInput = document.getElementById("resolution_file");
+const fileInfo = document.getElementById("fileInfo");
+
+const updateFileModal = document.getElementById("updateFileModal");
+const closeUpdateFileModal = document.getElementById("closeUpdateFileModal");
+const cancelUpdateFile = document.getElementById("cancelUpdateFile");
+const updateFileInput = document.getElementById("update_resolution_file");
+const updateFileInfo = document.getElementById("updateFileInfo");
+
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function renderTable() {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+    
+    const filtered = getFilteredData();
+    document.getElementById("totalRecords").textContent = filtered.length;
+    
+    // Filter badge
+    const badge = document.getElementById("filterBadge");
+    if (activeFilters.status) {
+        badge.style.display = "inline-flex";
+        document.getElementById("filterBadgeText").textContent = activeFilters.status;
+    } else {
+        badge.style.display = "none";
+    }
+    
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan='6' class='empty-state'>
+            <i class='fas fa-search'></i><br>
+            <strong>No records found</strong><br>
+            <small>Try adjusting your filters</small>
+        </td></tr>`;
+        return;
+    }
+    
+    const statusClassMap = {
+        'Under Review': 'status-under',
+        'Action Taken': 'status-action',
+        'Resolved': 'status-resolved',
+        'Not Applicable': 'status-not'
+    };
+    
+    filtered.forEach((row, idx) => {
+        const statusClass = statusClassMap[row.Status] || 'status-under';
+        const fileIndicator = row.hasFile ? '<span class="file-indicator" title="Resolution file attached"><i class="fas fa-paperclip"></i></span>' : '';
+        
+        const tr = document.createElement("tr");
+        tr.dataset.sid = row.S_ID;
+        tr.dataset.category = row.Suggestion_Category;
+        tr.dataset.title = row.Suggestion_Title;
+        tr.dataset.date = row.Date;
+        tr.dataset.status = row.Status;
+        tr.dataset.hasfile = row.hasFile ? '1' : '0';
+        tr.dataset.area = row.Suggestion_Area;
+        tr.title = "Double-click to view details and update status";
+        
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><strong>#${row.S_ID}</strong></td>
+            <td>${escapeHtml(row.Suggestion_Category)}</td>
+            <td>${escapeHtml(row.Suggestion_Title)}</td>
+            <td>${row.Date}</td>
+            <td><span class='status-badge ${statusClass}'>${row.Status}</span>${fileIndicator}</td>
+        `;
+        
+        tr.addEventListener("dblclick", () => openDetailsModal(tr));
+        tbody.appendChild(tr);
+    });
+}
+
+// ============================================================
+// FILTERING
+// ============================================================
+function getFilteredData() {
+    return fakeDatabase.filter(row => {
+        // Month filter
+        if (activeFilters.month) {
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const rowMonth = months[new Date(row.Date).getMonth()];
+            if (rowMonth !== activeFilters.month) return false;
+        }
+        if (activeFilters.year) {
+            const rowYear = new Date(row.Date).getFullYear().toString();
+            if (rowYear !== activeFilters.year) return false;
+        }
+        if (activeFilters.category && row.Suggestion_Category !== activeFilters.category) return false;
+        if (activeFilters.status && row.Status !== activeFilters.status) return false;
+        return true;
+    });
+}
+
+function applyFilters() {
+    activeFilters.month = document.getElementById("monthFilter").value;
+    activeFilters.year = document.getElementById("yearFilter").value;
+    activeFilters.category = document.getElementById("categoryFilter").value;
+    activeFilters.status = document.getElementById("statusFilter").value;
+    
+    // Update active-filter class
+    document.getElementById("monthFilter").classList.toggle("active-filter", !!activeFilters.month);
+    document.getElementById("yearFilter").classList.toggle("active-filter", !!activeFilters.year);
+    document.getElementById("categoryFilter").classList.toggle("active-filter", !!activeFilters.category);
+    document.getElementById("statusFilter").classList.toggle("active-filter", !!activeFilters.status);
+    
+    renderTable();
+}
+
+function resetFilters() {
+    activeFilters = { month: '', year: '', category: '', status: '' };
+    document.getElementById("filterForm").reset();
+    document.querySelectorAll(".filter-group select").forEach(s => s.classList.remove("active-filter"));
+    renderTable();
+}
+
+// ============================================================
+// MODAL OPEN
+// ============================================================
+function openDetailsModal(tr) {
+    const sid = tr.dataset.sid;
+    const hasFile = tr.dataset.hasfile === '1';
+    const currentStatus = tr.dataset.status;
+
+    currentSuggestionId = sid;
+    currentHasFile = hasFile;
+
+    document.getElementById("m_sid").value = sid;
+    document.getElementById("m_sid_hidden").value = sid;
+    document.getElementById("m_category").value = tr.dataset.category;
+    document.getElementById("m_title").value = tr.dataset.title;
+    document.getElementById("m_date").value = tr.dataset.date;
+    document.getElementById("m_status_edit").value = currentStatus;
+    document.getElementById("m_area").textContent = tr.dataset.area;
+
+    if (hasFile) {
+        downloadFileBtn.style.display = 'inline-flex';
+        updateFileBtn.style.display = 'inline-flex';
+        downloadFileBtn.onclick = () => {
+            alert(`(Fake) Downloading resolution file for suggestion #${sid}...`);
+        };
+        updateFileBtn.onclick = () => openUpdateFileModal(sid);
+    } else {
+        downloadFileBtn.style.display = 'none';
+        updateFileBtn.style.display = 'none';
+    }
+
+    if (currentStatus === 'Resolved' && hasFile) {
+        fileUploadSection.style.display = 'block';
+        existingFileNotice.style.display = 'block';
+        fileInput.removeAttribute('required');
+    } else if (currentStatus === 'Resolved' && !hasFile) {
+        fileUploadSection.style.display = 'block';
+        existingFileNotice.style.display = 'none';
+        fileInput.setAttribute('required', 'required');
+    } else {
+        fileUploadSection.style.display = 'none';
+        existingFileNotice.style.display = 'none';
+    }
+
+    fileInput.value = '';
+    fileInfo.classList.remove('active');
+    modal.style.display = "flex";
+    attachExportHandler();
+}
+
+// ============================================================
+// STATUS UPDATE (Fake)
+// ============================================================
+function handleStatusUpdate() {
+    const sid = parseInt(document.getElementById("m_sid_hidden").value);
+    const newStatus = statusSelect.value;
+    
+    if (!newStatus) {
+        alert("Please select a status.");
+        return;
+    }
+    
+    if (newStatus === 'Resolved') {
+        if (!currentHasFile && (!fileInput.files || fileInput.files.length === 0)) {
+            alert('Please upload a file (PDF, Word, or Excel) before setting status to Resolved.');
+            return;
+        }
+        
+        if (fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size exceeds 10MB limit.');
+                return;
+            }
+        }
+    }
+    
+    // Update fake database
+    const record = fakeDatabase.find(r => r.S_ID === sid);
+    if (record) {
+        record.Status = newStatus;
+        if (fileInput.files && fileInput.files.length > 0) {
+            record.hasFile = true;
+        }
+    }
+    
+    alert(`(Fake) Status for suggestion #${sid} updated to "${newStatus}" successfully!`);
+    modal.style.display = "none";
+    renderTable();
+}
+
+// ============================================================
+// STATUS CHANGE HANDLER
+// ============================================================
+statusSelect.addEventListener('change', function() {
+    if (this.value === 'Resolved') {
+        fileUploadSection.style.display = 'block';
+        if (currentHasFile) {
+            existingFileNotice.style.display = 'block';
+            fileInput.removeAttribute('required');
+        } else {
+            existingFileNotice.style.display = 'none';
+            fileInput.setAttribute('required', 'required');
+        }
+    } else {
+        fileUploadSection.style.display = 'none';
+        existingFileNotice.style.display = 'none';
+        fileInput.value = '';
+        fileInfo.classList.remove('active');
+    }
+});
+
+fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        const file = this.files[0];
+        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        document.getElementById('fileName').textContent = `${file.name} (${fileSize} MB)`;
+        fileInfo.classList.add('active');
+    } else {
+        fileInfo.classList.remove('active');
+    }
+});
+
+// ============================================================
+// UPDATE FILE MODAL (Fake)
+// ============================================================
+function openUpdateFileModal(sid) {
+    document.getElementById("update_file_sid").value = sid;
+    document.getElementById("update_file_sid_display").value = "#" + sid;
+    updateFileInput.value = '';
+    updateFileInfo.classList.remove('active');
+    modal.style.display = "none";
+    updateFileModal.style.display = "flex";
+}
+
+function handleFileUpdate() {
+    if (!updateFileInput.files || updateFileInput.files.length === 0) {
+        alert('Please select a file to upload.');
+        return;
+    }
+    const file = updateFileInput.files[0];
+    if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds 10MB limit.');
+        return;
+    }
+    
+    const sid = parseInt(document.getElementById("update_file_sid").value);
+    const record = fakeDatabase.find(r => r.S_ID === sid);
+    if (record) record.hasFile = true;
+    
+    alert(`(Fake) Resolution file for suggestion #${sid} updated successfully!`);
+    updateFileModal.style.display = "none";
+    renderTable();
+}
+
+closeUpdateFileModal.onclick = () => {
+    updateFileModal.style.display = "none";
+    modal.style.display = "flex";
+};
+cancelUpdateFile.onclick = () => {
+    updateFileModal.style.display = "none";
+    modal.style.display = "flex";
+};
+
+updateFileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+        const file = this.files[0];
+        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        document.getElementById('updateFileName').textContent = `${file.name} (${fileSize} MB)`;
+        updateFileInfo.classList.add('active');
+    } else {
+        updateFileInfo.classList.remove('active');
+    }
+});
+
+// ============================================================
+// CLOSE HANDLERS
+// ============================================================
+closeBtn.onclick = () => modal.style.display = "none";
+window.onclick = e => { 
+    if (e.target === modal) modal.style.display = "none"; 
+    if (e.target === updateFileModal) {
+        updateFileModal.style.display = "none";
+        modal.style.display = "flex";
+    }
+};
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+        if (updateFileModal.style.display === "flex") {
+            updateFileModal.style.display = "none";
+            modal.style.display = "flex";
+        } else if (modal.style.display === "flex") {
+            modal.style.display = "none";
+        }
+    }
+});
+
+// ============================================================
+// EXPORT PDF (Individual)
+// ============================================================
+function attachExportHandler() {
+    if (!exportBtn) return;
+    exportBtn.onclick = () => {
+        const btn = exportBtn;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+        btn.disabled = true;
+
+        const suggestionData = {
+            id: document.getElementById("m_sid").value,
+            category: document.getElementById("m_category").value,
+            title: document.getElementById("m_title").value,
+            date: document.getElementById("m_date").value,
+            status: document.getElementById("m_status_edit").value,
+            details: document.getElementById("m_area").textContent,
+            hasFile: currentHasFile
+        };
+
+        generateSuggestionPDF(suggestionData);
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 2000);
+    };
+}
+
+function generateSuggestionPDF(data) {
+    const printWindow = window.open("", "_blank");
+    const attachmentSection = data.hasFile ? `
+        <div class="attachment-section">
+            <h3>📎 Resolution File Included</h3>
+            <p>This suggestion has an attached resolution file.</p>
+        </div>` : `
+        <div class="attachment-section" style="background: #fef3c7; border-left-color: #f59e0b;">
+            <h3>⚠️ No Resolution File</h3>
+            <p style="color: #92400e;">No resolution file has been attached to this suggestion yet.</p>
+        </div>`;
+    
+    const pdfContent = `
+    <!DOCTYPE html><html><head><title>Suggestion Details - #${data.id}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin:40px; line-height:1.6; color:#333; }
+        .header { text-align:center; border-bottom:2px solid #067091; padding-bottom:20px; margin-bottom:30px; }
+        .header h1 { color:#067091; margin:0; font-size:28px; }
+        .detail-row { display:flex; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; }
+        .detail-label { font-weight:bold; width:150px; color:#067091; }
+        .detail-value { flex:1; padding-left:20px; }
+        .details-section { margin-top:30px; padding:20px; background:#f9f9f9; border-radius:8px; border-left:4px solid #067091; }
+        .attachment-section { margin-top:30px; padding:20px; background:#e0f2fe; border-radius:8px; border-left:4px solid #0284c7; }
+        .footer { margin-top:40px; text-align:center; font-size:12px; color:#666; border-top:1px solid #eee; padding-top:20px; }
+    </style></head><body>
+        <div class="header"><h1>Suggestion Details Report</h1><p>Generated on ${new Date().toLocaleString()}</p></div>
+        <div class="detail-row"><div class="detail-label">Suggestion ID:</div><div class="detail-value">#${data.id}</div></div>
+        <div class="detail-row"><div class="detail-label">Category:</div><div class="detail-value">${data.category}</div></div>
+        <div class="detail-row"><div class="detail-label">Title:</div><div class="detail-value">${data.title}</div></div>
+        <div class="detail-row"><div class="detail-label">Date:</div><div class="detail-value">${data.date}</div></div>
+        <div class="detail-row"><div class="detail-label">Current Status:</div><div class="detail-value">${data.status}</div></div>
+        <div class="details-section"><h3>Suggestion Details</h3><div style="white-space:pre-wrap;">${data.details}</div></div>
+        ${attachmentSection}
+        <div class="footer"><p>© ${new Date().getFullYear()} Suggestion & Complaint Management System</p></div>
+        <script>window.onload=function(){window.print();window.onafterprint=()=>window.close();};<\/script>
+    </body></html>`;
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+}
+
+// ============================================================
+// GENERATE TABLE REPORT (PDF)
+// ============================================================
+function getStatusClass(status) {
+    const map = {
+        'Under Review': 'status-under',
+        'Action Taken': 'status-action',
+        'Resolved': 'status-resolved',
+        'Not Applicable': 'status-not'
+    };
+    return map[status] || 'status-under';
+}
+
+document.getElementById("generateReportBtn").addEventListener("click", function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    btn.disabled = true;
+
+    const tableData = getFilteredData().map(r => ({
+        id: r.S_ID,
+        category: r.Suggestion_Category,
+        title: r.Suggestion_Title,
+        date: r.Date,
+        status: r.Status
+    }));
+
+    generateTableReport(tableData, activeFilters);
+
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 2000);
+});
+
+function generateTableReport(data, filters) {
+    const printWindow = window.open("", "_blank");
+    
+    let filterSummary = '';
+    if (filters.month || filters.year || filters.category || filters.status) {
+        filterSummary = '<div class="filter-info"><h3>Applied Filters:</h3><ul>';
+        if (filters.month) filterSummary += `<li><strong>Month:</strong> ${filters.month}</li>`;
+        if (filters.year) filterSummary += `<li><strong>Year:</strong> ${filters.year}</li>`;
+        if (filters.category) filterSummary += `<li><strong>Category:</strong> ${filters.category}</li>`;
+        if (filters.status) filterSummary += `<li><strong>Status:</strong> ${filters.status}</li>`;
+        filterSummary += '</ul></div>';
+    }
+    
+    let tableRows = '';
+    data.forEach((item, index) => {
+        const statusClass = getStatusClass(item.status);
+        tableRows += `<tr>
+            <td>${index + 1}</td>
+            <td><strong>#${item.id}</strong></td>
+            <td>${item.category}</td>
+            <td>${item.title}</td>
+            <td>${item.date}</td>
+            <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+        </tr>`;
+    });
+
+    const pdfContent = `
+    <!DOCTYPE html><html><head><title>Suggestions Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+        .header { text-align: center; border-bottom: 3px solid #067091; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: #067091; margin: 0; font-size: 32px; }
+        .stats { background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #067091; }
+        .filter-info { background: #fffbeb; padding: 15px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #f59e0b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        thead { background: linear-gradient(135deg, #067091, #055a73); color: white; }
+        th { padding: 14px 10px; text-align: left; font-weight: 600; font-size: 13px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        tbody tr:nth-child(even) { background-color: #f8fafc; }
+        .status-badge { padding: 5px 12px; border-radius: 15px; font-size: 11px; font-weight: 600; display: inline-block; min-width: 100px; text-align: center; }
+        .status-under { background: #fef3c7; color: #92400e; }
+        .status-action { background: #dbeafe; color: #1e40af; }
+        .status-resolved { background: #d1fae5; color: #065f46; }
+        .status-not { background: #fecaca; color: #991b1b; }
+        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+    </style></head><body>
+        <div class="header"><h1>📊 Suggestions & Complaints Report</h1><p><strong>Generated on:</strong> ${new Date().toLocaleString()}</p></div>
+        <div class="stats"><strong>Total Records in Report: ${data.length}</strong></div>
+        ${filterSummary}
+        <table><thead><tr><th>#</th><th>ID</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>${tableRows}</tbody></table>
+        <div class="footer"><p>© ${new Date().getFullYear()} Suggestion & Complaint Management System</p></div>
+        <script>window.onload=function(){window.print();window.onafterprint=()=>window.close();};<\/script>
+    </body></html>`;
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+}
+
+// ============================================================
+// EXPORT EXCEL
+// ============================================================
+document.getElementById("exportExcelBtn").addEventListener("click", function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+    btn.disabled = true;
+
+    const tableData = getFilteredData().map(r => ({
+        id: r.S_ID,
+        category: r.Suggestion_Category,
+        title: r.Suggestion_Title,
+        date: r.Date,
+        status: r.Status,
+        area: r.Suggestion_Area,
+        hasFile: r.hasFile ? 'Yes' : 'No'
+    }));
+
+    exportToExcel(tableData, activeFilters);
+
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 1500);
+});
+
+function exportToExcel(data, filters) {
+    let html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">';
+    html += '<style>table{border-collapse:collapse;width:100%;}th{background:#067091;color:white;padding:12px;border:1px solid #ddd;text-align:left;}td{padding:10px;border:1px solid #ddd;}tr:nth-child(even){background:#f8fafc;}</style>';
+    html += '</head><body>';
+    html += '<h2 style="color:#067091;">Suggestions & Complaints Report</h2>';
+    html += '<p><strong>Generated:</strong> ' + new Date().toLocaleString() + '<br>';
+    html += '<strong>Total Records:</strong> ' + data.length + '</p>';
+    
+    if (filters.month || filters.year || filters.category || filters.status) {
+        html += '<p><strong>Applied Filters:</strong><br>';
+        if (filters.month) html += 'Month: ' + filters.month + '<br>';
+        if (filters.year) html += 'Year: ' + filters.year + '<br>';
+        if (filters.category) html += 'Category: ' + filters.category + '<br>';
+        if (filters.status) html += 'Status: ' + filters.status + '<br>';
+        html += '</p>';
+    }
+    
+    html += '<table><thead><tr><th>#</th><th>ID</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th><th>Has Attachment</th><th>Details</th></tr></thead><tbody>';
+    data.forEach((item, index) => {
+        html += `<tr><td>${index + 1}</td><td>#${item.id}</td><td>${item.category}</td><td>${item.title}</td><td>${item.date}</td><td>${item.status}</td><td>${item.hasFile}</td><td>${escapeHtml(item.area)}</td></tr>`;
+    });
+    html += '</tbody></table></body></html>';
+    
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().split('T')[0];
+    let filename = 'Suggestions_Report_' + dateStr;
+    if (filters.status) filename += '_' + filters.status.replace(/\s+/g, '_');
+    link.href = url;
+    link.download = filename + '.xls';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// ============================================================
+// INITIAL RENDER
+// ============================================================
+renderTable();
+</script>
+
+</body>
+</html>

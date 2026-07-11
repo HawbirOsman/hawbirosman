@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suggestion Form</title>
+<style>
+    :root {
+        --primary: #067091;       /* Accent color */
+        --primary-light: #f0f8fa;
+        --text-dark: #222;
+        --text-light: #555;
+        --border: #d1d9dd;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(135deg, #eaf3f6, #ffffff);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .page {
+        background-color: #fff;
+        max-width: 850px;
+        width: 100%;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        padding: 30px 40px;
+    }
+
+    /* Header */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .header img {
+        max-width: 180px;
+        width: 100%;
+        height: auto;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+        color: var(--primary);
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Form */
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .col {
+        flex: 1;
+        min-width: 250px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: #fff;
+        transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(6,112,145,0.1);
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .button-group {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    button {
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-cancel {
+        background-color: #e1e6e8;
+        color: var(--text-dark);
+    }
+
+    .btn-cancel:hover {
+        background-color: #ccd3d6;
+    }
+
+    .btn-submit {
+        background-color: var(--primary);
+        color: #fff;
+    }
+
+    .btn-submit:hover {
+        background-color: #055a74;
+    }
+
+    .footer-text {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        line-height: 1.4;
+        margin-top: 30px;
+        text-align: center;
+    }
+    
+    #Suggestion-area {
+    min-height: 260px;     /* Increased height */
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    resize: vertical;      /* Allow user to stretch further if needed */
+}
+
+
+    @media (max-width: 600px) {
+        .header {
+            flex-direction: column;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 1.7rem;
+        }
+        .page {
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+    <!-- Header -->
+    <div class="header">
+        <img src="logo.webp" alt="Company Logo">
+        <h1>Suggestion Form</h1>
+    </div>
+
+    <!-- Form -->
+   <form method="post" action="submit_suggestion.php">
+
+        <div class="row">
+            <div class="col">
+                <label for="Suggestion">Suggestion Category</label>
+                <select id="Suggestion" name="Suggestion" required>
+    <option value="">Select category</option>
+    <option>Workplace Environment</option>
+    <option>Health & Safety</option>
+    <option>Facilities</option>
+    <option>Management & Supervision</option>
+    <option>Colleagues & Behaviour</option>
+    <option>IT & System</option>
+    <option>HR & Policies</option>
+    <option>Procurement & Finance</option>
+    <option>Other</option>
+</select>
+
+            </div>
+
+            <div class="col">
+                <label for="title">Suggestion Title</label>
+                <input type="text" id="title" name="title" placeholder="Enter title" required>
+            </div>
+        </div>
+
+        <!-- Inside your form -->
+<div class="col">
+    <label for="Suggestion-area">Suggestion Area <span class="required">*</span></label>
+    <textarea id="Suggestion-area" name="Suggestion-area"
+        placeholder="Please describe your suggestion in detail..."
+        required></textarea>
+</div>
+
+
+
+        <div class="button-group">
+            <button type="button" class="btn-cancel" onclick="window.history.back()">Back</button>
+            <button type="submit" class="btn-submit">Submit</button>
+        </div>
+    </form>
+
+    <p class="footer-text">
+        All submissions are confidential. No login or personal details are required.  
+        Submissions are reviewed regularly by People &amp; Culture and the ESG Steering Group.  
+        If you wish to discuss an issue directly or receive follow-up, please contact them directly.
+    </p>
+</div>
+
+</body>
+</html>

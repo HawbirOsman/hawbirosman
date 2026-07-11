@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suggestion &amp; Complaint — Hiwa Rauf</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #eaf3f6, #ffffff);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* Animated envelope */
+  .envelope-wrap {
+    margin-bottom: -10px;
+  }
+  .envelope-wrap svg {
+    width: 90px;
+    height: 90px;
+    display: block;
+    animation: float 2.5s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+
+  .logo {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #067091;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+    text-align: center;
+  }
+
+  .container {
+    background: #ffffff;
+    max-width: 620px;
+    width: 100%;
+    padding: 40px 36px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(6, 112, 145, 0.18);
+  }
+
+  .container h1 {
+    font-size: 1.75rem;
+    color: #111;
+    margin-bottom: 20px;
+  }
+
+  .icon-box {
+    margin-bottom: 18px;
+  }
+  .icon-box svg {
+    width: 80px;
+    height: 80px;
+    stroke: #067091;
+  }
+
+  p.description {
+    color: #444;
+    font-size: 0.97rem;
+    line-height: 1.65;
+    margin-bottom: 32px;
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    background: #ffffff;
+    color: #2a3b4c;
+    padding: 13px 36px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn:hover {
+    background: #067091;
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(6, 112, 145, 0.35);
+  }
+
+  .footer-text {
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 28px 20px; }
+    .container h1 { font-size: 1.4rem; }
+    .btn { padding: 11px 24px; font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="envelope-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#067091" stroke-width="1.4">
+      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+  </div>
+
+  <div class="logo">Hiwa Rauf for Investment &amp; Development</div>
+
+  <div class="container">
+    <h1>Suggestion &amp; Complaint</h1>
+
+    <div class="icon-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.3">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+    </div>
+
+    <p class="description">
+      This form is confidential and available 24/7. Please use it to share complaints,
+      suggestions, or ideas for improvement. Honest and constructive input helps us
+      build a better workplace.
+    </p>
+
+    <div class="button-group">
+      <a href="suggestion.html" class="btn">Suggestion</a>
+      <a href="complain-form.html" class="btn">Complaint</a>
+    </div>
+
+    <p class="footer-text">
+      All submissions are confidential — no login or personal details are required.<br>
+      Reviewed regularly by People &amp; Culture and the ESG Steering Group.<br>
+      If you wish to discuss an issue directly, please contact them directly.
+    </p>
+  </div>
+
+</body>
+</html>
